@@ -1,0 +1,19 @@
+# secrets
+.env
+
+# python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# airflow / local data
+logs/
+pgdata/
+*.log
+
+# editors / OS
+.vscode/
+.idea/
+.DS_Store
