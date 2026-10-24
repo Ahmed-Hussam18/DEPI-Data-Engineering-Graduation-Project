@@ -342,8 +342,8 @@ egypt-eco-platform/
 ### R5: البيئة
 - [x] **1.1a** `(R2)` إنشاء GitHub repo للمشروع (تم)
 - [x] **1.1b** `(R2)` إضافة الـ 4 أعضاء كـ Collaborators (Settings ثم Collaborators) وإرسال رابط الـ repo للتيم
-- [ ] **1.1c** `(R5)` إضافة هيكل الفولدرات (قسم 14) + `.gitignore` + `.env.example`، ورفع ملف الـ md في `docs/`
-- [ ] **1.2** `(R5)` كتابة `docker-compose.yml` لـ PostgreSQL (database `eco` + database `airflow`) مع volume
+- [x] **1.1c** `(R5)` إضافة هيكل الفولدرات (قسم 14) + `.gitignore` + `.env.example`، ورفع ملف الـ md في `docs/`
+- [x] **1.2** `(R5)` كتابة `docker-compose.yml` لـ PostgreSQL (database `eco` + database `airflow`) مع volume
 - [ ] **1.3** `(R5)` تشغيل البيئة عند **الـ 5 أعضاء** (كل واحد clone + `docker compose up -d` بنجاح)
 - [ ] **1.4** `(R5)` تفعيل حماية `main` (PR + موافقة واحدة)
 - [ ] **1.5** `(R5)` إنشاء GitHub Project بالأعمدة (Backlog / Doing / Review / Done) وإضافة كل مهام الملف ده
