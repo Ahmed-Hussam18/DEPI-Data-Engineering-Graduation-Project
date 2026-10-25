@@ -1,0 +1,2 @@
+# Extra Python packages for the DAGs, one per line.
+# Add what you import in src/ and dags/. Airflow already ships with requests and psycopg2.
