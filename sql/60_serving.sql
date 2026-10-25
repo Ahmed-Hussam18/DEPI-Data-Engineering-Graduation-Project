@@ -79,7 +79,7 @@ SELECT DISTINCT ON (source)
        records_count,
        error_message
 FROM ops.pipeline_runs
-ORDER BY source, started_at DESC;
+ORDER BY source, started_at DESC, run_id DESC;
 
 -- Pipeline-health dashboard: rejected records grouped by cause
 CREATE OR REPLACE VIEW serving.v_rejected_summary AS
@@ -103,6 +103,6 @@ SELECT DISTINCT ON (source, check_name)
        details,
        checked_at
 FROM ops.quality_results
-ORDER BY source, check_name, checked_at DESC;
+ORDER BY source, check_name, checked_at DESC, id DESC;
 
 RESET ROLE;

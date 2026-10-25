@@ -16,4 +16,5 @@ CREATE ROLE reader   LOGIN PASSWORD :'reader_pw';
 
 -- Nobody gets implicit access to eco through PUBLIC.
 REVOKE ALL ON DATABASE eco FROM PUBLIC;
-GRANT CONNECT ON DATABASE eco TO etl_user, reader;
+GRANT CONNECT, TEMPORARY ON DATABASE eco TO etl_user;
+GRANT CONNECT ON DATABASE eco TO reader;
