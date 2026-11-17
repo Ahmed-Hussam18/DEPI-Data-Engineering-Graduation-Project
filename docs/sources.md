@@ -1,8 +1,63 @@
+
 # Data Sources
 
-This file documents every data source of the Egypt Economic Intelligence Platform: what it is, how it is collected, which rules apply, and what its known limits are. Each source has its own section. Facts were verified on 2026-10-22 unless stated otherwise.
+This file documents every data source of the Egypt Economic Intelligence Platform: what it is, how it is collected, which rules apply, and what its known limits are.
 
-## Static shopping site: Metro Markets (R2)
+# 1. FX and Gold: fawazahmed0 Currency API (R1)
+
+| Item | Value |
+|---|---|
+| Type | REST API, JSON, no API key |
+| URL | `https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@{date}/v1/currencies/usd.json` (`{date}` = `latest` or `YYYY-MM-DD`) |
+| Fallback | `https://{date}.currency-api.pages.dev/v1/currencies/usd.json` |
+| Data | 200+ currencies and metals, daily, USD as base |
+| EGP support | VERIFY: The connector refuses a response without `egp`; `fetch_samples.py` prints it |
+| Gold | `xau` = troy ounces per 1 USD. We derive EGP per gram: `egp / xau / 31.1035`, then multiply by karat/24 for 24K, 21K and 18K |
+| Rate limits | The project's wiki states no rate limits. We call it once a day |
+| Terms | Listed as CC0 (public domain) on a third-party index; VERIFY on the GitHub repository `fawazahmed0/exchange-api` |
+| History | Date-based URLs; earliest available date VERIFY (needed for task 3.13) |
+| Limitation | Gold is the international spot price converted to EGP. It is NOT the jeweller's price in Egypt |
+| Sample | `tests/samples/fx_gold_usd_latest.json` |
+| Fallback plan | If EGP/XAU is missing or the API disappears, switch to another API with the same output shape. Only `fx_gold.py` changes |
+
+# 2. World Bank API (R1)
+
+| Item | Value |
+|---|---|
+| Type | REST API, JSON, no API key |
+| URL | `https://api.worldbank.org/v2/country/EGY/indicator/FP.CPI.TOTL.ZG?format=json&per_page=500` |
+| Data | Egypt, Inflation, consumer prices (annual %), one value per year |
+| Gaps | Some years have `value: null`. Kept as NULL; staging decides (task 4.10) |
+| Frequency | Annual, so we collect it monthly or less |
+| Rate limits | No key; we make one call per run |
+| Terms | World Bank open data terms, commonly CC BY 4.0: VERIFY and cite the World Bank in the demo |
+| Sample | `tests/samples/world_bank_egy_inflation.json` |
+
+# 3. Official File (CSV / Excel) (R1)
+
+**Status: NOT CHOSEN YET (task 1.16)**
+
+Candidates:
+
+| Candidate | Publisher | Notes |
+|---|---|---|
+| Headline urban CPI | CAPMAS (Central Agency for Public Mobilization and Statistics) | Headline inflation is published by CAPMAS, often as PDF; look for an Excel/CSV table |
+| Core inflation | Central Bank of Egypt (CBE) | Core inflation is calculated and published by the CBE |
+
+To finish this section, document:
+
+- Publisher
+- Direct download URL
+- Format
+- Update frequency
+- Column headers (Arabic or English)
+- Whether reuse is allowed
+
+Then set `OFFICIAL_FILE_URL` and `COLUMN_MAP` in `src/connectors/official_file.py`.
+
+If no stable file download exists, tell the team early and switch to another official file (the guide allows replacing a source).
+
+# 4. Static Shopping Site: Metro Markets (R2)
 
 | Item | Value |
 |---|---|
@@ -12,13 +67,13 @@ This file documents every data source of the Egypt Economic Intelligence Platfor
 | Schedule | Daily, 06:00 Africa/Cairo |
 | Currency | EGP, VAT inclusive (stated in the site's terms) |
 
-### Why this site
+## Why This Site
 
 - Pages are server-rendered: names, prices and links are present in the raw HTML.
-- Every product page exposes price, currency, availability and a stable numeric item id in `<meta property="product:*">` tags.
-- On 2026-10-22 the price matched in three places for all 15 basket products: the category-page card, the product-page price element, and the product meta tag.
+- Every product page exposes price, currency, availability and a stable numeric item ID in `<meta property="product:*">` tags.
+- On 2026-10-22, the price matched in three places for all 15 basket products: the category-page card, the product-page price element, and the product meta tag.
 
-### Responsible scraping
+## Responsible Scraping
 
 - robots.txt (checked 2026-10-22): `User-agent: *` with an empty `Disallow:`, so nothing is disallowed.
 - Terms and Conditions (https://www.metro-markets.com/terms-and-conditions, checked 2026-10-22): no clause about robots, crawling, scraping or automated access was found. The terms do not grant explicit permission either, and no written permission has been requested yet.
@@ -30,11 +85,11 @@ This file documents every data source of the Egypt Economic Intelligence Platfor
   - Stop on 403, 429 or a captcha; never evade a block.
 - Only code and small excerpts are published (see `tests/samples/`). Full pages are not republished.
 
-### Page structure used by the parser
+## Page Structure Used by the Parser
 
 | Field | Where it is found |
 |---|---|
-| Product id | `<meta property="product:retailer_item_id">`, and the number at the end of the URL `/product/<slug>/<id>` |
+| Product ID | `<meta property="product:retailer_item_id">`, and the number at the end of the URL `/product/<slug>/<id>` |
 | Current price | `<meta property="product:price:amount">`, cross-checked against `div.price p.after` |
 | Old price (discount) | `div.price p.before` (empty when there is no discount) |
 | Currency | `<meta property="product:price:currency">` (EGP) |
@@ -46,9 +101,9 @@ This file documents every data source of the Egypt Economic Intelligence Platfor
 
 Planned rule: the price is read from the meta tag; if it differs from the visible price element, the record is a structural validation failure.
 
-### Fixed basket (15 products)
+## Fixed Basket (15 Products)
 
-| # | Item (our label) | product_id | Product name on site | Size | Price on 2026-10-22 (EGP) | Notes |
+| # | Item (our label) | Product ID | Product name on site | Size | Price on 2026-10-22 (EGP) | Notes |
 |---|---|---|---|---|---|---|
 | 1 | Rice | 4613 | Al Doha Egyptian White Rice | 1 kg | 41.99 | |
 | 2 | Sugar | 6896 | Rehana White Sugar | 1 kg | 39.99 | Only white sugar in its category; the other products are powdered or icing sugar |
@@ -68,18 +123,18 @@ Planned rule: the price is read from the meta tag; if it differs from the visibl
 
 This table fixes only which products are tracked. Index weights are decided separately (index view). A product is replaced only by team agreement, because the index compares the same product over time.
 
-### Known limits
+## Known Limits
 
 1. Branch not selected: the site header shows "Choose Branch" and we do not select one, so prices are the default list. The site's terms say the range and prices may differ by delivery location.
 2. Discounts: three basket products (6565, 4408, 3513) had a struck-through old price on the verification day. The current price is the price that is stored. The old price is not stored for now, because `staging.prices_clean` has no column for it; adding one is a shared-schema change that needs the team's agreement (R3).
 3. No cooking oil: no bottled edible oil was found in the English catalogue (searches for oil, sunflower and corn, and no oil category in the category tree). The Arabic catalogue was not searched. Ghee is tracked instead. IDSC publishes daily prices of basic commodities including sunflower oil, which could serve as a reference outside the basket (to be decided by the team).
 4. Names are not stable across page types (category card vs product page), so identity relies on `product_id` only.
-5. Category names on the site are unreliable (for example the "Balady Ghee" category contains cheese-labelled items and "Fresh Milk" contains cream), so our own category labels are used.
+5. Category names on the site are unreliable (for example, the "Balady Ghee" category contains cheese-labelled items and "Fresh Milk" contains cream), so our own category labels are used.
 6. Descriptions are empty for 7 of the 15 products, and brand metadata is unreliable.
 7. Weighed goods: the terms say weighed goods are charged by unit price and the delivered quantity may differ. We record only the listed shelf price.
 8. Short verification window: prices were checked within a single day, so stability over time is unknown until daily collection runs.
 
-### Sources evaluated and rejected
+## Sources Evaluated and Rejected
 
 | Site | Result | Reason |
 |---|---|---|
@@ -88,3 +143,4 @@ This table fixes only which products are tracked. Index weights are decided sepa
 | Awlad Ragab | Rejected | Brochure site: offers are published as images, with no online shop prices. |
 | Seoudi | Rejected | Corporate website only, no online shop. |
 | Gourmet Egypt | Backup | Server-rendered Magento shop; terms (revised 2022-11-15) have no scraping clause. Its robots.txt is ambiguous: the `*` group is open, but a long disallow list (checkout, customer, catalog and others) follows another bot's group, so we would treat it as applying to us. Prices are premium, so it is less representative of basic goods. |
+
