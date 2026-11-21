@@ -82,3 +82,7 @@ Use it on dev databases only: it uses the real currency codes, so it would overw
 ## Known limitation
 
 If a product attribute changes and the same day is loaded again, that day can hold one price per product version. Normal runs (one load per day) are not affected.
+## Basket index
+
+`serving.v_basket_index` computes `Index_t = 100 * SUM(w_i * p_i,t / p_i,0)` over the products listed in `dwh.basket_weights` (product_id, weight; weights are divided by their total). The base date is the first day on which every basket product has a price; a product without a price takes its last price from the previous 3 days (fill-forward), and a day that is still incomplete shows `index_value = NULL` with `products_missing > 0`.
+The table is empty until the real basket is chosen (then the view returns no rows): insert the product_ids used by the scraper with their weights. `sql/tests/test_basket_index.sql` checks the formula with hand-calculated numbers.
