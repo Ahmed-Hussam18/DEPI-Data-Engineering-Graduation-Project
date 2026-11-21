@@ -79,20 +79,26 @@ calendar AS (                                    -- every day between the first 
     WHERE d.full_date BETWEEN (SELECT MIN(full_date) FROM observed)
                           AND (SELECT MAX(full_date) FROM observed)
 ),
-filled AS (                                      -- price of each basket product on each day
-    SELECT w.product_id, w.weight, c.full_date,
-           o.price, o.full_date AS observed_on
+grid AS (                                        -- every basket product x every day
+    SELECT w.product_id, w.weight, c.full_date
     FROM w
     CROSS JOIN calendar c
-    LEFT JOIN LATERAL (
-        SELECT x.price, x.full_date
-        FROM observed x
-        WHERE x.product_id = w.product_id
-          AND x.full_date <= c.full_date
-          AND x.full_date >= c.full_date - 3     -- max days of fill-forward
-        ORDER BY x.full_date DESC
-        LIMIT 1
-    ) o ON TRUE
+),
+marked AS (                                      -- date of the last real price up to each day
+    SELECT g.product_id, g.weight, g.full_date,
+           MAX(o.full_date) OVER (PARTITION BY g.product_id
+                                  ORDER BY g.full_date) AS last_observed
+    FROM grid g
+    LEFT JOIN observed o ON o.product_id = g.product_id
+                        AND o.full_date  = g.full_date
+),
+filled AS (                                      -- price of each basket product on each day
+    SELECT m.product_id, m.weight, m.full_date,
+           o.price, o.full_date AS observed_on
+    FROM marked m
+    LEFT JOIN observed o ON o.product_id = m.product_id
+                        AND o.full_date  = m.last_observed
+                        AND m.last_observed >= m.full_date - 3   -- max days of fill-forward
 ),
 base AS (
     SELECT MIN(full_date) AS base_date
