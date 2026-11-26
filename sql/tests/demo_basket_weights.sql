@@ -4,7 +4,8 @@
 --   docker compose exec postgres psql -U eco_admin -d eco -f /sql/tests/demo_basket_weights.sql
 
 \set ON_ERROR_STOP on
-DELETE FROM dwh.basket_weights WHERE product_id LIKE 'DEMO-%';
+-- DEV ONLY: replaces the real basket (sql/46) so the demo index has prices for every product
+DELETE FROM dwh.basket_weights;
 INSERT INTO dwh.basket_weights (product_id, weight) VALUES
     ('DEMO-rice',     0.15),
     ('DEMO-sugar',    0.10),
