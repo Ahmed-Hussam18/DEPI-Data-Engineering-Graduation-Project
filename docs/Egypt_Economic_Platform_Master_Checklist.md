@@ -456,14 +456,14 @@ egypt-eco-platform/
 ## المرحلة 4: الـ Warehouse (أيام 17–22)
 
 ### R3
-- [ ] **4.1** `(R3)` تحميل `dim_date` و `dim_source` و `dim_currency` و `dim_indicator`
-- [ ] **4.2** `(R3)` SCD2 على `dim_product` بخطوتين (قفل ثم إدخال)، مع تطبيع الاسم قبل المقارنة
-- [ ] **4.3** `(R3)` تحميل `fact_price` بـ UPSERT مع ربط الـ surrogate keys
-- [ ] **4.4** `(R3)` تحميل `fact_gold_fx` و `fact_indicator`
-- [ ] **4.5** `(R3)` `indexes` على `date_key` و `product_key`
-- [ ] **4.6** `(R3)` اختبار **idempotency**: تشغيل التحميل مرتين = نفس الأرقام
-- [ ] **4.7** `(R3)` اختبار SCD2: تغيير فئة منتج ينتج نسختين صح
-- [ ] **4.8** `(R3)` كل مصدر داخل **transaction واحدة**
+- [x] **4.1** `(R3)` تحميل `dim_date` و `dim_source` و `dim_currency` و `dim_indicator`
+- [x] **4.2** `(R3)` SCD2 على `dim_product` بخطوتين (قفل ثم إدخال)، مع تطبيع الاسم قبل المقارنة
+- [x] **4.3** `(R3)` تحميل `fact_price` بـ UPSERT مع ربط الـ surrogate keys
+- [x] **4.4** `(R3)` تحميل `fact_gold_fx` و `fact_indicator`
+- [x] **4.5** `(R3)` `indexes` على `date_key` و `product_key`
+- [x] **4.6** `(R3)` اختبار **idempotency**: تشغيل التحميل مرتين = نفس الأرقام
+- [x] **4.7** `(R3)` اختبار SCD2: تغيير فئة منتج ينتج نسختين صح
+- [x] **4.8** `(R3)` كل مصدر داخل **transaction واحدة**
 
 ### R1
 - [x] **4.9** `(R1)` staging للـ APIs (`fx_gold_clean`, `indicators_clean`) + تحويلها من raw
