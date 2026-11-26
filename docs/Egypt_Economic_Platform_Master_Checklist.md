@@ -351,8 +351,8 @@ egypt-eco-platform/
 
 ### R3: تصميم الـ Warehouse
 - [ ] **1.7** `(R3)` رسم ERD للـ dwh (الأبعاد والحقائق في قسم 6) → `docs/erd`
-- [ ] **1.8** `(R3)` كتابة DDL لكل الـ schemas: `raw`, `staging`, `dwh`, `ops`, `serving` (ملفات `sql/*.sql`)
-- [ ] **1.9** `(R3)` إنشاء المستخدمين `etl_user` و `reader` (SELECT على serving فقط)
+- [x] **1.8** `(R3)` كتابة DDL لكل الـ schemas: `raw`, `staging`, `dwh`, `ops`, `serving` (ملفات `sql/*.sql`)
+- [x] **1.9** `(R3)` إنشاء المستخدمين `etl_user` و `reader` (SELECT على serving فقط)
 - [ ] **1.10** `(R3)` تنفيذ الـ DDL على Postgres، وكل الأدوار تراجع الأسماء
 
 ### R1: المصادر (APIs والملف الرسمي)
