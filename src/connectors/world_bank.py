@@ -4,9 +4,12 @@ API docs: https://datahelpdesk.worldbank.org/knowledgebase/articles/889392
 Response shape: [ {page info}, [ {indicator, country, date, value, ...}, ... ] ]
 `value` is null for years without data; we keep those rows (staging decides).
 """
+
+from typing import ClassVar
+
 import requests
 
-from .base import BaseConnector, reject, is_number
+from .base import BaseConnector, is_number, reject
 
 REQUIRED = ("source", "indicator_code", "country", "period", "value")
 
@@ -14,7 +17,9 @@ REQUIRED = ("source", "indicator_code", "country", "period", "value")
 class WorldBankConnector(BaseConnector):
     name = "world_bank"
     BASE = "https://api.worldbank.org/v2/country/{country}/indicator/{indicator}"
-    HEADERS = {"User-Agent": "EcoPlatformBot/1.0 (student project)"}
+    HEADERS: ClassVar[dict[str, str]] = {
+        "User-Agent": "EcoPlatformBot/1.0 (student project)"
+    }
 
     def __init__(self, country="EGY", indicator="FP.CPI.TOTL.ZG", session=None):
         self.country = country
@@ -52,7 +57,9 @@ class WorldBankConnector(BaseConnector):
         rows = []
         for item in raw[1]:
             indicator = item.get("indicator") or {}
-            country = item.get("countryiso3code") or (item.get("country") or {}).get("id")
+            country = item.get("countryiso3code") or (item.get("country") or {}).get(
+                "id"
+            )
             rows.append(
                 {
                     "source": self.name,
@@ -72,8 +79,11 @@ class WorldBankConnector(BaseConnector):
                 rejected.append(reject(row, f"missing field(s): {', '.join(missing)}"))
             elif not row["indicator_code"] or not row["country"]:
                 rejected.append(reject(row, "empty indicator_code or country"))
-            elif not (isinstance(row["period"], str) and row["period"].isdigit()
-                      and len(row["period"]) == 4):
+            elif not (
+                isinstance(row["period"], str)
+                and row["period"].isdigit()
+                and len(row["period"]) == 4
+            ):
                 rejected.append(reject(row, f"period is not a year: {row['period']!r}"))
             elif row["value"] is not None and not is_number(row["value"]):
                 rejected.append(reject(row, f"value is not a number: {row['value']!r}"))

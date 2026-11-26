@@ -17,7 +17,7 @@ def test_parse_csv_with_fixed_columns():
             w = csv.writer(f)
             w.writerow(["الشهر", "معدل التضخم", "ملاحظات"])
             w.writerow(["2026-08", 14.5, "x"])
-            w.writerow(["2026-09", "", "y"])      # missing value -> None
+            w.writerow(["2026-09", "", "y"])  # missing value -> None
         c = OfficialFileConnector(url="http://example.test/cpi.csv", save_dir=tmp)
         c.COLUMN_MAP = {"الشهر": "period", "معدل التضخم": "value"}
         rows = c.parse({"file_path": path})

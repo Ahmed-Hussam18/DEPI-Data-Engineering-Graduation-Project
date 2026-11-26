@@ -11,6 +11,7 @@ A month without a value 12 months earlier gets no YOY row (nothing is invented).
 Like api_staging.py: build_* is a pure function (unit tested), load_* talks to
 Postgres and rebuilds this source's rows on every run (idempotent).
 """
+
 from src.connectors.official_file import OfficialFileConnector
 from src.transform.api_staging import split_period
 
@@ -28,15 +29,33 @@ def build_official_file_staging(rows):
         index[parts] = (r, r["value"])
     out = []
     for (year, month), (r, value) in sorted(index.items()):
-        base = {"source": r["source"], "country": r["country"], "frequency": "monthly",
-                "period_year": year, "period_month": month}
-        out.append({**base, "indicator_code": r["indicator_code"],
-                    "indicator_name": INDEX_NAME, "unit": "index", "value": value})
+        base = {
+            "source": r["source"],
+            "country": r["country"],
+            "frequency": "monthly",
+            "period_year": year,
+            "period_month": month,
+        }
+        out.append(
+            {
+                **base,
+                "indicator_code": r["indicator_code"],
+                "indicator_name": INDEX_NAME,
+                "unit": "index",
+                "value": value,
+            }
+        )
         prev = index.get((year - 1, month))
         if prev and prev[1]:
-            out.append({**base, "indicator_code": "CPI_URBAN_YOY",
-                        "indicator_name": YOY_NAME, "unit": "%",
-                        "value": round((value / prev[1] - 1) * 100, 4)})
+            out.append(
+                {
+                    **base,
+                    "indicator_code": "CPI_URBAN_YOY",
+                    "indicator_name": YOY_NAME,
+                    "unit": "%",
+                    "value": round((value / prev[1] - 1) * 100, 4),
+                }
+            )
     return out
 
 
@@ -51,31 +70,45 @@ def load_official_file_staging():
     """Rebuild this source's rows in staging.indicators_clean from the LATEST
     file in raw.files. Returns the number of rows written."""
     from psycopg2.extras import execute_values
+
     from src.common.raw_store import _connect
 
     conn = _connect()
     try:
-        with conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    "SELECT file_path FROM raw.files WHERE source = 'official_file' "
-                    "ORDER BY collected_at DESC LIMIT 1")
-                found = cur.fetchone()
-                if not found:
-                    return 0
-                valid, _rejected = rows_from_file(found[0])
-                rows = build_official_file_staging(valid)
-                cur.execute("DELETE FROM staging.indicators_clean "
-                            "WHERE source = 'official_file'")
-                if rows:
-                    execute_values(
-                        cur,
-                        "INSERT INTO staging.indicators_clean "
-                        "(source, indicator_code, indicator_name, unit, frequency, country, "
-                        "period_year, period_month, value) VALUES %s",
-                        [(r["source"], r["indicator_code"], r["indicator_name"], r["unit"],
-                          r["frequency"], r["country"], r["period_year"], r["period_month"],
-                          r["value"]) for r in rows])
-                return len(rows)
+        with conn, conn.cursor() as cur:
+            cur.execute(
+                "SELECT file_path FROM raw.files WHERE source = 'official_file' "
+                "ORDER BY collected_at DESC LIMIT 1"
+            )
+            found = cur.fetchone()
+            if not found:
+                return 0
+            valid, _rejected = rows_from_file(found[0])
+            rows = build_official_file_staging(valid)
+            cur.execute(
+                "DELETE FROM staging.indicators_clean WHERE source = 'official_file'"
+            )
+            if rows:
+                execute_values(
+                    cur,
+                    "INSERT INTO staging.indicators_clean "
+                    "(source, indicator_code, indicator_name, unit, frequency, country, "
+                    "period_year, period_month, value) VALUES %s",
+                    [
+                        (
+                            r["source"],
+                            r["indicator_code"],
+                            r["indicator_name"],
+                            r["unit"],
+                            r["frequency"],
+                            r["country"],
+                            r["period_year"],
+                            r["period_month"],
+                            r["value"],
+                        )
+                        for r in rows
+                    ],
+                )
+            return len(rows)
     finally:
         conn.close()
