@@ -500,8 +500,8 @@ egypt-eco-platform/
 - [ ] **5.8** `(R4)` تأكيد إن أي فشل نهائي بيتسجل في `ops.pipeline_runs`
 
 ### R3
-- [ ] **5.9** `(R3)` Views أولية للمؤشر
-- [ ] **5.10** `(R3)` Views فوق ops (`serving.v_pipeline_status`, `serving.v_rejected_summary`) لـ R5
+- [x] **5.9** `(R3)` Views أولية للمؤشر
+- [x] **5.10** `(R3)` Views فوق ops (`serving.v_pipeline_status`, `serving.v_rejected_summary`) لـ R5
 
 ### R5
 - [ ] **5.11** `(R5)` لوحة Grafana **صحة الـ pipeline** (نجاح/فشل، مرفوضات، نتائج جودة)
