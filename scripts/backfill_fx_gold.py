@@ -6,7 +6,7 @@ Usage (needs internet + the database from docker compose):
 For each day it calls the API for that date and stores the response in raw.
 Days already stored are skipped, so you can run it again safely.
 The World Bank connector needs no backfill: every response already holds all years.
-NOTE: the first date the API has is not confirmed. Days that fail are listed at
+NOTE: the API history starts on 2024-03-02 (verified): use that as the start date.
 the end; if old days always fail, that is simply where the history starts.
 """
 import os
