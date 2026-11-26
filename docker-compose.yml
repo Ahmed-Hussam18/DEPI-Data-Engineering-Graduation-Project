@@ -105,6 +105,15 @@ services:
     restart: unless-stopped
     ports:
       - "${API_PORT:-8000}:8000"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB:-eco}
+      DB_USER: reader
+      DB_PASSWORD: ${READER_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
     healthcheck:
       test:
         - CMD
