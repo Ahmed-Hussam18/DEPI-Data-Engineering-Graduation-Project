@@ -6,6 +6,7 @@ Connection settings (first match wins):
   3. POSTGRES_HOST / POSTGRES_PORT / POSTGRES_DB / ETL_USER / ETL_USER_PASSWORD
      (defaults: localhost, 5432, eco, etl_user)
 """
+
 import os
 
 
@@ -27,10 +28,9 @@ def _connect():
 def _insert(sql, params):
     conn = _connect()
     try:
-        with conn:  # one transaction: commit on success, rollback on error
-            with conn.cursor() as cur:
-                cur.execute(sql, params)
-                return cur.fetchone()[0]
+        with conn, conn.cursor() as cur:
+            cur.execute(sql, params)
+            return cur.fetchone()[0]
     finally:
         conn.close()
 

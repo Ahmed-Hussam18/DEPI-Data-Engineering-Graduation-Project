@@ -17,12 +17,14 @@ Settings (env vars win over the defaults):
   RAW_FILES_DIR       folder on the docker volume (default: data/raw_files)
 """
 import hashlib
+import math
 import os
 import re
+from typing import ClassVar
 
 import requests
 
-from .base import BaseConnector, reject, is_number
+from .base import BaseConnector, is_number, reject
 
 REQUIRED = ("source", "indicator_code", "country", "period", "value")
 
@@ -35,11 +37,25 @@ def normalize_header(text):
     return text
 
 
-MONTHS = {"jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
-          "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12}
+MONTHS = {
+    "jan": 1,
+    "feb": 2,
+    "mar": 3,
+    "apr": 4,
+    "may": 5,
+    "jun": 6,
+    "jul": 7,
+    "aug": 8,
+    "sep": 9,
+    "oct": 10,
+    "nov": 11,
+    "dec": 12,
+}
 ALL_ITEMS_LABELS = ("all items", "الرقم العام")
-DEFAULT_URL = ("https://www.cbe.org.eg/-/media/project/cbe/listing/time-series/"
-               "inflation/cpi/cpi--monthly_.xls")
+DEFAULT_URL = (
+    "https://www.cbe.org.eg/-/media/project/cbe/listing/time-series/"
+    "inflation/cpi/cpi--monthly_.xls"
+)
 
 
 def month_label_to_period(label):
@@ -62,7 +78,7 @@ def _to_float(v):
         f = float(v)
     except (TypeError, ValueError):
         return None
-    return f if f == f else None
+    return f if not math.isnan(f) else None
 
 
 def parse_cbe_cpi_workbook(path):
@@ -80,10 +96,12 @@ def parse_cbe_cpi_workbook(path):
 
     sheets = pd.read_excel(path, sheet_name=None, header=None)
     seen = {}
-    for _name, df in sheets.items():
+    for df in sheets.values():
         header_row, labels = None, {}
         for i in range(len(df)):
-            found = {j: month_label_to_period(v) for j, v in enumerate(df.iloc[i].tolist())}
+            found = {
+                j: month_label_to_period(v) for j, v in enumerate(df.iloc[i].tolist())
+            }
             found = {j: p for j, p in found.items() if p}
             if len(found) >= 2:
                 header_row, labels = i, found
@@ -104,7 +122,9 @@ def parse_cbe_cpi_workbook(path):
                         seen[period] = value
                 break
     if not seen:
-        raise ValueError("Official file: no 'All Items' CPI row with month columns found")
+        raise ValueError(
+            "Official file: no 'All Items' CPI row with month columns found"
+        )
     return sorted(seen.items())
 
 
@@ -114,19 +134,25 @@ def _looks_like_excel(content):
 
 class OfficialFileConnector(BaseConnector):
     name = "official_file"
-    HEADERS = {"User-Agent": "EcoPlatformBot/1.0 (student project)"}
+    HEADERS: ClassVar[dict[str, str]] = {
+        "User-Agent": "EcoPlatformBot/1.0 (student project)"
+    }
     # The CBE firewall rejects bot-like clients; a plain browser User-Agent is accepted.
-    BROWSER_HEADERS = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
-                                     "(KHTML, like Gecko) Chrome/120 Safari/537.36",
-                       "Accept": "*/*"}
+    BROWSER_HEADERS: ClassVar[dict[str, str]] = {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/120 Safari/537.36",
+        "Accept": "*/*",
+    }
 
     # ---- fill these in after task 1.16 ---------------------------------
     URL = os.getenv("OFFICIAL_FILE_URL") or DEFAULT_URL
     LOCAL_PATH = os.getenv("OFFICIAL_FILE_PATH")
-    INDICATOR_CODE = "CPI_URBAN_INDEX"    # CBE urban CPI index, 2018/19 = 100, monthly
+    INDICATOR_CODE = "CPI_URBAN_INDEX"  # CBE urban CPI index, 2018/19 = 100, monthly
     COUNTRY = "EGY"
-    COLUMN_MAP = {}                       # e.g. {"الشهر": "period", "معدل التضخم": "value"}
-    SHEET = 0                             # Excel sheet index or name
+    COLUMN_MAP: ClassVar[
+        dict[str, str]
+    ] = {}  # e.g. {"الشهر": "period", "معدل التضخم": "value"}
+    SHEET = 0  # Excel sheet index or name
     # --------------------------------------------------------------------
 
     def __init__(self, url=None, save_dir=None, session=None):
@@ -140,7 +166,9 @@ class OfficialFileConnector(BaseConnector):
         self.last_endpoint = self.url
         self.last_status = resp.status_code
         resp.raise_for_status()
-        if not _looks_like_excel(resp.content) and not self.url.lower().endswith(".csv"):
+        if not _looks_like_excel(resp.content) and not self.url.lower().endswith(
+            ".csv"
+        ):
             raise RuntimeError("download is not an Excel file (blocked page?)")
         return resp.content
 
@@ -176,17 +204,29 @@ class OfficialFileConnector(BaseConnector):
     def store_raw(self, raw):
         from src.common import raw_store
 
-        return raw_store.store_file(self.name, raw["file_name"], raw["file_path"],
-                                    raw["sha256"], raw["size_bytes"])
+        return raw_store.store_file(
+            self.name,
+            raw["file_name"],
+            raw["file_path"],
+            raw["sha256"],
+            raw["size_bytes"],
+        )
 
     def parse(self, raw):
         import pandas as pd
 
         path = raw["file_path"]
         if not self.COLUMN_MAP:  # default: CBE CPI workbook
-            return [{"source": self.name, "indicator_code": self.INDICATOR_CODE,
-                     "country": self.COUNTRY, "period": period, "value": value}
-                    for period, value in parse_cbe_cpi_workbook(path)]
+            return [
+                {
+                    "source": self.name,
+                    "indicator_code": self.INDICATOR_CODE,
+                    "country": self.COUNTRY,
+                    "period": period,
+                    "value": value,
+                }
+                for period, value in parse_cbe_cpi_workbook(path)
+            ]
         if path.lower().endswith((".xlsx", ".xls")):
             df = pd.read_excel(path, sheet_name=self.SHEET)
         else:
@@ -200,11 +240,17 @@ class OfficialFileConnector(BaseConnector):
         rows = []
         for rec in df.to_dict("records"):
             value = rec["value"]
-            if value != value:  # NaN -> None
+            if pd.isna(value):  # NaN -> None
                 value = None
-            rows.append({"source": self.name, "indicator_code": self.INDICATOR_CODE,
-                         "country": self.COUNTRY, "period": str(rec["period"]).strip(),
-                         "value": value})
+            rows.append(
+                {
+                    "source": self.name,
+                    "indicator_code": self.INDICATOR_CODE,
+                    "country": self.COUNTRY,
+                    "period": str(rec["period"]).strip(),
+                    "value": value,
+                }
+            )
         return rows
 
     def validate(self, rows):

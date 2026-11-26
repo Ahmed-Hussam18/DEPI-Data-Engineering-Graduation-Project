@@ -3,7 +3,9 @@ import os
 
 from src.connectors.world_bank import WorldBankConnector
 
-SAMPLE = os.path.join(os.path.dirname(__file__), "samples", "world_bank_egy_inflation.json")
+SAMPLE = os.path.join(
+    os.path.dirname(__file__), "samples", "world_bank_egy_inflation.json"
+)
 
 
 def load():
@@ -30,8 +32,13 @@ def test_validate_keeps_null_values_as_gaps():
 
 def test_validate_rejects_bad_rows():
     c = WorldBankConnector()
-    good = {"source": "world_bank", "indicator_code": "X", "country": "EGY",
-            "period": "2022", "value": 1.0}
+    good = {
+        "source": "world_bank",
+        "indicator_code": "X",
+        "country": "EGY",
+        "period": "2022",
+        "value": 1.0,
+    }
     bad_period = dict(good, period="22")
     bad_value = dict(good, value="abc")
     no_field = {"source": "world_bank"}
@@ -42,7 +49,13 @@ def test_validate_rejects_bad_rows():
 
 
 def test_check_shape_errors():
-    for bad in (None, [], [{"message": [{"id": "120"}]}], [{"pages": 1}], [{"pages": 1}, None]):
+    for bad in (
+        None,
+        [],
+        [{"message": [{"id": "120"}]}],
+        [{"pages": 1}],
+        [{"pages": 1}, None],
+    ):
         try:
             WorldBankConnector._check_shape(bad)
         except ValueError:

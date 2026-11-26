@@ -12,6 +12,7 @@ validate() returns (valid_rows, rejected_rows). Each rejected row is a dict:
   {"reason": "<why>", "record": <the row as it was>}
 which maps straight onto ops.records_rejected (stage = 'validate').
 """
+import math
 
 
 class BaseConnector:
@@ -60,4 +61,4 @@ def is_number(x):
     """True for real finite numbers (bool and NaN/inf are not numbers here)."""
     if isinstance(x, bool) or not isinstance(x, (int, float)):
         return False
-    return x == x and x not in (float("inf"), float("-inf"))
+    return not isinstance(x, float) or math.isfinite(x)

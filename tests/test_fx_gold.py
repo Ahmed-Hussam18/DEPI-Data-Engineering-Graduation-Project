@@ -2,7 +2,7 @@ import json
 import math
 import os
 
-from src.connectors.fx_gold import FxGoldConnector, GRAMS_PER_TROY_OUNCE
+from src.connectors.fx_gold import GRAMS_PER_TROY_OUNCE, FxGoldConnector
 
 SAMPLE = os.path.join(os.path.dirname(__file__), "samples", "fx_gold_usd_latest.json")
 
@@ -53,8 +53,14 @@ def test_missing_currency_is_rejected_not_crashed():
 
 def test_validate_rules():
     c = FxGoldConnector()
-    base = {"source": "fx_gold", "code": "USD", "kind": "currency", "karat": None,
-            "rate": 48.0, "observed_at": "2026-10-25T00:00:00+03:00"}
+    base = {
+        "source": "fx_gold",
+        "code": "USD",
+        "kind": "currency",
+        "karat": None,
+        "rate": 48.0,
+        "observed_at": "2026-10-25T00:00:00+03:00",
+    }
     bad = [
         dict(base, rate=0),
         dict(base, rate=-1),
@@ -71,7 +77,12 @@ def test_validate_rules():
 
 
 def test_shape_check_requires_egp():
-    for bad in (None, {}, {"date": "2026-10-25", "usd": {"eur": 1}}, {"usd": {"egp": 1}}):
+    for bad in (
+        None,
+        {},
+        {"date": "2026-10-25", "usd": {"eur": 1}},
+        {"usd": {"egp": 1}},
+    ):
         try:
             FxGoldConnector._check_shape(bad)
         except ValueError:
