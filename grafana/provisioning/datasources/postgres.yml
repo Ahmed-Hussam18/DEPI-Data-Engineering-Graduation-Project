@@ -1,0 +1,18 @@
+apiVersion: 1
+
+datasources:
+  - name: Egypt Economic Platform
+    uid: eco-postgres
+    type: postgres
+    access: proxy
+    url: postgres:5432
+    user: reader
+    secureJsonData:
+      password: $READER_PASSWORD
+    jsonData:
+      database: $POSTGRES_DB
+      sslmode: disable
+      postgresVersion: 1600
+      timescaledb: false
+    isDefault: true
+    editable: false
