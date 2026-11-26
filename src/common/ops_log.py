@@ -20,8 +20,6 @@ from contextlib import contextmanager
 from datetime import date, datetime
 from zoneinfo import ZoneInfo
 
-import psycopg2
-
 CAIRO = ZoneInfo("Africa/Cairo")
 
 
@@ -31,6 +29,8 @@ def cairo_today() -> date:
 
 def _connect():
     """Same lookup order as src/common/raw_store.py."""
+    import psycopg2  # imported here so tests work without psycopg2 installed
+
     url = os.getenv("ECO_DB_URL") or os.getenv("AIRFLOW_CONN_ECO_DB")
     if url:
         return psycopg2.connect(url)
