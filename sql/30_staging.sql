@@ -28,8 +28,11 @@ CREATE TABLE IF NOT EXISTS staging.prices_clean (
     unit_price    NUMERIC(12,4), -- price per base unit (kg / l)
     currency      TEXT,
     price_date    DATE,          -- Africa/Cairo date
-    observed_at   TIMESTAMPTZ
+    observed_at   TIMESTAMPTZ,
+    old_price     NUMERIC(12,2)  -- price before the discount (NULL when no discount); last column on purpose
 );
+-- for databases created before old_price existed (same column order as a fresh database)
+ALTER TABLE staging.prices_clean ADD COLUMN IF NOT EXISTS old_price NUMERIC(12,2);
 CREATE INDEX IF NOT EXISTS ix_prices_clean_key
     ON staging.prices_clean (product_id, source, price_date);
 
