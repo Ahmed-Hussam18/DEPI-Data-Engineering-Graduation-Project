@@ -344,10 +344,10 @@ egypt-eco-platform/
 - [x] **1.1b** `(R2)` إضافة الـ 4 أعضاء كـ Collaborators (Settings ثم Collaborators) وإرسال رابط الـ repo للتيم
 - [x] **1.1c** `(R5)` إضافة هيكل الفولدرات (قسم 14) + `.gitignore` + `.env.example`، ورفع ملف الـ md في `docs/`
 - [x] **1.2** `(R5)` كتابة `docker-compose.yml` لـ PostgreSQL (database `eco` + database `airflow`) مع volume
-- [ ] **1.3** `(R5)` تشغيل البيئة عند **الـ 5 أعضاء** (كل واحد clone + `docker compose up -d` بنجاح)
-- [ ] **1.4** `(R5)` تفعيل حماية `main` (PR + موافقة واحدة)
-- [ ] **1.5** `(R5)` إنشاء GitHub Project بالأعمدة (Backlog / Doing / Review / Done) وإضافة كل مهام الملف ده
-- [ ] **1.6** `(R5)` إعداد Airflow في Compose (بالتنسيق مع R4)
+- [x] **1.3** `(R5)` تشغيل البيئة عند **الـ 5 أعضاء** (كل واحد clone + `docker compose up -d` بنجاح)
+- [x] **1.4** `(R5)` تفعيل حماية `main` (PR + موافقة واحدة)
+- [x] **1.5** `(R5)` إنشاء GitHub Project بالأعمدة (Backlog / Doing / Review / Done) وإضافة كل مهام الملف ده
+- [x] **1.6** `(R5)` إعداد Airflow في Compose (بالتنسيق مع R4)
 
 ### R3: تصميم الـ Warehouse
 - [ ] **1.7** `(R3)` رسم ERD للـ dwh (الأبعاد والحقائق في قسم 6) → `docs/erd`
@@ -408,10 +408,10 @@ egypt-eco-platform/
 - [ ] **2.17** `(R4)` تشغيل DAGs الـ APIs + الـ scraper raw-only **بالجدولة الفعلية يوم 10**
 
 ### R5
-- [ ] **2.18** `(R5)` Airflow شغال في Compose بـ `LocalExecutor`
-- [ ] **2.19** `(R5)` FastAPI skeleton (`/health` + endpoints فاضية)
-- [ ] **2.20** `(R5)` CI أولي: `ruff` + `pytest` على كل push
-- [ ] **2.21** `(R5)` قياس استهلاك الـ RAM الفعلي للخدمات
+- [x] **2.18** `(R5)` Airflow شغال في Compose بـ `LocalExecutor`
+- [x] **2.19** `(R5)` FastAPI skeleton (`/health` + endpoints فاضية)
+- [x] **2.20** `(R5)` CI أولي: `ruff` + `pytest` على كل push
+- [x] **2.21** `(R5)` قياس استهلاك الـ RAM الفعلي للخدمات
 
 ### ✅ نقطة تحقق يوم 10
 - [ ] **CP-10** الجدولة شغالة وبيانات بتتجمع يومياً (raw) من الـ APIs والـ scraper
