@@ -1,0 +1,7 @@
+pytest
+ruff
+pandas
+requests
+beautifulsoup4
+lxml
+openpyxl
