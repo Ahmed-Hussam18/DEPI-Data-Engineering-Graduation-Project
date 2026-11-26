@@ -16,7 +16,7 @@ x-airflow-common: &airflow-common
     AIRFLOW__WEBSERVER__DEFAULT_UI_TIMEZONE: Africa/Cairo
     # Connection id "eco_db" for DAG tasks (etl_user is created by sql/00_databases_roles.sql)
     AIRFLOW_CONN_ECO_DB: postgresql://etl_user:${ETL_USER_PASSWORD}@postgres:5432/${POSTGRES_DB:-eco}
-    PYTHONPATH: /opt/airflow            # lets DAGs do: from src.connectors import ...
+    PYTHONPATH: /opt/airflow # lets DAGs do: from src.connectors import ...
     TZ: Africa/Cairo
   volumes:
     - ./dags:/opt/airflow/dags
@@ -97,6 +97,23 @@ services:
         condition: service_healthy
       airflow-init:
         condition: service_completed_successfully
+
+  api:
+    build:
+      context: ./api
+    container_name: eco_api
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-8000}:8000"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
+      interval: 15s
+      timeout: 5s
+      retries: 5
 
 volumes:
   pgdata:
