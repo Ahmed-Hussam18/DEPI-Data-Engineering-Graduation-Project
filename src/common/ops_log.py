@@ -6,6 +6,13 @@ go through this module (code rule: nobody else writes to ops).
 Connection lookup is the same as src/common/raw_store.py:
   1. ECO_DB_URL   2. AIRFLOW_CONN_ECO_DB (set inside the Airflow containers)
   3. POSTGRES_HOST / POSTGRES_PORT / POSTGRES_DB / ETL_USER / ETL_USER_PASSWORD
+
+Typical use inside a DAG:
+  run_id = start_run("fx_gold_daily", "fx_gold")
+  valid, rejected = connector.run(store=True)
+  log_rejected_rows("fx_gold", "validate", rejected, run_id)
+  log_quality(run_id, "fx_gold", "nulls", "critical", "pre_load", True)
+  finish_run(run_id, "success", records_count=len(valid))
 """
 import json
 import os
@@ -73,9 +80,12 @@ def finish_run(run_id: int, status: str, records_count: int | None = None,
         )
 
 
-def log_rejected(run_id: int, source: str, stage: str, reason: str,
-                 record: dict | None = None) -> None:
-    """stage: 'validate' (structural) or 'transform' (logical)."""
+def log_rejected(source: str, stage: str, reason: str,
+                 record: dict | None = None, run_id: int | None = None) -> None:
+    """Log one rejected record. run_id is optional (connectors do not know it).
+
+    stage: 'validate' (structural, in the connector) or 'transform' (logical, in cleaning).
+    """
     payload = json.dumps(record, default=str, ensure_ascii=False) if record is not None else None
     with get_conn() as conn, conn.cursor() as cur:
         cur.execute(
@@ -85,10 +95,11 @@ def log_rejected(run_id: int, source: str, stage: str, reason: str,
         )
 
 
-def log_rejected_rows(run_id: int, source: str, stage: str, rejected_rows: list) -> int:
-    """Log the [{"reason":..., "record":...}] list returned by connector.validate()."""
+def log_rejected_rows(source: str, stage: str, rejected_rows: list,
+                      run_id: int | None = None) -> int:
+    """Log the [{"reason": ..., "record": ...}] list returned by connector.validate()."""
     for r in rejected_rows:
-        log_rejected(run_id, source, stage, r["reason"], r.get("record"))
+        log_rejected(source, stage, r["reason"], r.get("record"), run_id)
     return len(rejected_rows)
 
 
