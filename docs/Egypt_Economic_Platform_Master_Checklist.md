@@ -445,8 +445,8 @@ egypt-eco-platform/
 - [ ] **3.16** `(R4)` دمج الـ scraper الكامل (parse + transform) في الـ DAG
 
 ### R5
-- [ ] **3.17** `(R5)` بناء endpoints الـ API على Views الـ mock
-- [ ] **3.18** `(R5)` Grafana skeleton متصل بمستخدم `reader`
+- [x] **3.17** `(R5)` بناء endpoints الـ API على Views الـ mock
+- [x] **3.18** `(R5)` Grafana skeleton متصل بمستخدم `reader`
 
 ### ✅ نقطة تحقق يوم 16
 - [ ] **CP-16** الـ scraper شغال ومجدول بالـ parsing والتنظيف، و staging بتتبني تلقائياً
@@ -477,8 +477,8 @@ egypt-eco-platform/
 - [ ] **4.13** `(R4)` `quality_gate` (الفحوصات الحرجة قبل التحميل)
 
 ### R5
-- [ ] **4.14** `(R5)` اختبارات pytest للتحويلات
-- [ ] **4.15** `(R5)` مراجعة PRs التيم، والتأكد إن CI أخضر
+- [x] **4.14** `(R5)` اختبارات pytest للتحويلات
+- [x] **4.15** `(R5)` مراجعة PRs التيم، والتأكد إن CI أخضر
 
 ### ✅ نقطة تحقق يوم 22
 - [ ] **CP-22** الـ warehouse جاهز ومتحمّل أوتوماتيك من الـ DAGs
@@ -532,9 +532,9 @@ egypt-eco-platform/
 - [ ] **6.7** `(R4)` مراقبة الـ DAGs وتثبيتها (مفيش تشغيل فاشل بدون سبب مفهوم)
 
 ### R5
-- [ ] **6.8** `(R5)` FastAPI كامل: `/prices/latest`, `/products/{id}/history`, `/index`, `/pipeline/status`
-- [ ] **6.9** `(R5)` كل الـ API بيقرأ من `serving` فقط عبر `reader`
-- [ ] **6.10** `(R5)` اختبار الـ endpoints
+- [x] **6.8** `(R5)` FastAPI كامل: `/prices/latest`, `/products/{id}/history`, `/index`, `/pipeline/status`
+- [x] **6.9** `(R5)` كل الـ API بيقرأ من `serving` فقط عبر `reader`
+- [x] **6.10** `(R5)` اختبار الـ endpoints
 
 ### ✅ نقطة تحقق يوم 32
 - [ ] **CP-32** الـ API والمؤشر شغالين
