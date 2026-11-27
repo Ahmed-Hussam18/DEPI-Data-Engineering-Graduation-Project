@@ -400,10 +400,10 @@ egypt-eco-platform/
 - [x] **2.11** `(R3)` تدريب على SCD2 على بيانات العينة (تغيير فئة منتج وتتأكد إن النسخة القديمة اتقفلت)
 
 ### R4
-- [ ] **2.12** `(R4)` `ops_log.py` (تسجيل بداية/نهاية/حالة في `ops.pipeline_runs`)
-- [ ] **2.13** `(R4)` قالب DAG (extract → save_raw → validate → transform → quality_gate → load → post_load_checks)
-- [ ] **2.14** `(R4)` `retries=3` + `retry_delay=5min` + logging
-- [ ] **2.15** `(R4)` ضبط الجدولة: 06:00 Cairo يومي، وأسبوعي/شهري للمصادر الدورية
+- [x] **2.12** `(R4)` `ops_log.py` (تسجيل بداية/نهاية/حالة في `ops.pipeline_runs`)
+- [x] **2.13** `(R4)` قالب DAG (extract → save_raw → validate → transform → quality_gate → load → post_load_checks)
+- [x] **2.14** `(R4)` `retries=3` + `retry_delay=5min` + logging
+- [x] **2.15** `(R4)` ضبط الجدولة: 06:00 Cairo يومي، وأسبوعي/شهري للمصادر الدورية
 - [ ] **2.16** `(R4)` تسليم قالب الـ DAG قبل **يوم 8**
 - [ ] **2.17** `(R4)` تشغيل DAGs الـ APIs + الـ scraper raw-only **بالجدولة الفعلية يوم 10**
 
