@@ -504,7 +504,7 @@ egypt-eco-platform/
 - [x] **5.10** `(R3)` Views فوق ops (`serving.v_pipeline_status`, `serving.v_rejected_summary`) لـ R5
 
 ### R5
-- [ ] **5.11** `(R5)` لوحة Grafana **صحة الـ pipeline** (نجاح/فشل، مرفوضات، نتائج جودة)
+- [x] **5.11** `(R5)` لوحة Grafana **صحة الـ pipeline** (نجاح/فشل، مرفوضات، نتائج جودة)
 
 ### R2
 - [ ] **5.12** `(R2)` *(اختياري)* مصدر Playwright لو الوقت سمح، وإلا مساعدة التيم
