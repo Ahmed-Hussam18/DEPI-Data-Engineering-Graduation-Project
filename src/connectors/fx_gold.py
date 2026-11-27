@@ -12,20 +12,21 @@ Gold is derived from the international spot price. It is NOT the price at an
 Egyptian jeweller (no making charges, taxes or local premium).
 """
 from datetime import datetime, timedelta, timezone
+from typing import ClassVar
 
 import requests
 
-from .base import BaseConnector, reject, is_number
+from .base import BaseConnector, is_number, reject
 
 GRAMS_PER_TROY_OUNCE = 31.1035
 KARATS = (24, 21, 18)
 REQUIRED = ("source", "code", "kind", "karat", "rate", "observed_at")
 
-try:
-    from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
+try:
     _CAIRO = ZoneInfo("Africa/Cairo")
-except Exception:  # tzdata missing (some Windows installs): pip install tzdata
+except ZoneInfoNotFoundError:  # tzdata missing (some Windows installs)
     _CAIRO = timezone(timedelta(hours=2))
 
 
@@ -35,7 +36,9 @@ class FxGoldConnector(BaseConnector):
         "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@{date}/v1/currencies/usd.json",
         "https://{date}.currency-api.pages.dev/v1/currencies/usd.json",
     )
-    HEADERS = {"User-Agent": "EcoPlatformBot/1.0 (student project)"}
+    HEADERS: ClassVar[dict[str, str]] = {
+        "User-Agent": "EcoPlatformBot/1.0 (student project)"
+    }
     CURRENCIES = ("usd", "eur", "gbp", "sar")  # shown as EGP per 1 unit
 
     def __init__(self, date="latest", session=None):
@@ -61,9 +64,9 @@ class FxGoldConnector(BaseConnector):
     @staticmethod
     def _check_shape(data):
         if not isinstance(data, dict) or not isinstance(data.get("usd"), dict):
-            raise ValueError("FX/Gold: unexpected JSON shape (no 'usd' object)")
+            raise ValueError("FX/Gold: unexpected JSON shape (no 'usd' object)")  # noqa: TRY004
         if not isinstance(data.get("date"), str):
-            raise ValueError("FX/Gold: no 'date' field")
+            raise ValueError("FX/Gold: no 'date' field")  # noqa: TRY004
         if "egp" not in data["usd"]:
             raise ValueError("FX/Gold: EGP not in response (task 1.12 failed)")
 
@@ -80,8 +83,14 @@ class FxGoldConnector(BaseConnector):
         rows = []
 
         def row(code, kind, karat, rate):
-            return {"source": self.name, "code": code, "kind": kind,
-                    "karat": karat, "rate": rate, "observed_at": observed_at}
+            return {
+                "source": self.name,
+                "code": code,
+                "kind": kind,
+                "karat": karat,
+                "rate": rate,
+                "observed_at": observed_at,
+            }
 
         for cur in self.CURRENCIES:
             per_usd = 1.0 if cur == "usd" else rates.get(cur)
@@ -110,11 +119,15 @@ class FxGoldConnector(BaseConnector):
             elif r["kind"] not in ("currency", "gold"):
                 rejected.append(reject(r, f"unknown kind: {r['kind']!r}"))
             elif r["kind"] == "gold" and r["karat"] not in KARATS:
-                rejected.append(reject(r, f"gold needs karat 24/21/18, got {r['karat']!r}"))
+                rejected.append(
+                    reject(r, f"gold needs karat 24/21/18, got {r['karat']!r}")
+                )
             elif r["kind"] == "currency" and r["karat"] is not None:
                 rejected.append(reject(r, "currency must have karat=None"))
             elif not is_number(r["rate"]):
-                rejected.append(reject(r, f"rate missing or not a number: {r['rate']!r}"))
+                rejected.append(
+                    reject(r, f"rate missing or not a number: {r['rate']!r}")
+                )
             elif r["rate"] <= 0:
                 rejected.append(reject(r, f"rate must be > 0, got {r['rate']}"))
             else:

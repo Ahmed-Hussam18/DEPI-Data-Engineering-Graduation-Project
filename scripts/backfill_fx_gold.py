@@ -6,9 +6,10 @@ Usage (needs internet + the database from docker compose):
 For each day it calls the API for that date and stores the response in raw.
 Days already stored are skipped, so you can run it again safely.
 The World Bank connector needs no backfill: every response already holds all years.
-NOTE: the first date the API has is not confirmed. Days that fail are listed at
+NOTE: the API history starts on 2024-03-02 (verified): use that as the start date.
 the end; if old days always fail, that is simply where the history starts.
 """
+
 import os
 import sys
 import time
@@ -16,15 +17,17 @@ from datetime import date, timedelta
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.common.raw_store import _connect  # noqa: E402
-from src.connectors.fx_gold import FxGoldConnector  # noqa: E402
+from src.common.raw_store import _connect
+from src.connectors.fx_gold import FxGoldConnector
 
 
 def stored_endpoints():
     conn = _connect()
     try:
         with conn.cursor() as cur:
-            cur.execute("SELECT endpoint FROM raw.api_responses WHERE source = 'fx_gold'")
+            cur.execute(
+                "SELECT endpoint FROM raw.api_responses WHERE source = 'fx_gold'"
+            )
             return {row[0] for row in cur.fetchall()}
     finally:
         conn.close()
@@ -43,15 +46,19 @@ def main(start, end):
                 valid, rejected = connector.run(store=True)
                 saved += 1
                 print(day, f"saved ({len(valid)} valid, {len(rejected)} rejected)")
-            except Exception as exc:  # keep going: one bad day must not stop the rest
+            except Exception as exc:  # noqa: BLE001 — keep going if one day's backfill fails
                 failed.append(day)
                 print(day, "FAILED:", exc)
             time.sleep(0.5)  # be polite
         day += timedelta(days=1)
-    print(f"\nDone: {saved} days saved, {len(failed)} failed: {[d.isoformat() for d in failed]}")
+    print(
+        f"\nDone: {saved} days saved, {len(failed)} failed: {[d.isoformat() for d in failed]}"
+    )
 
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        sys.exit("usage: python scripts/backfill_fx_gold.py START_DATE END_DATE (YYYY-MM-DD)")
+        sys.exit(
+            "usage: python scripts/backfill_fx_gold.py START_DATE END_DATE (YYYY-MM-DD)"
+        )
     main(date.fromisoformat(sys.argv[1]), date.fromisoformat(sys.argv[2]))

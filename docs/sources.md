@@ -11,11 +11,11 @@ This file documents every data source of the Egypt Economic Intelligence Platfor
 | URL | `https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@{date}/v1/currencies/usd.json` (`{date}` = `latest` or `YYYY-MM-DD`) |
 | Fallback | `https://{date}.currency-api.pages.dev/v1/currencies/usd.json` |
 | Data | 200+ currencies and metals, daily, USD as base |
-| EGP support | VERIFY: The connector refuses a response without `egp`; `fetch_samples.py` prints it |
+| EGP support | VERIFIED 2026-11-26: `usd.json` for `latest` has `egp` (54.21) and `xau`, 340 codes in total. The connector still refuses a response without `egp` |
 | Gold | `xau` = troy ounces per 1 USD. We derive EGP per gram: `egp / xau / 31.1035`, then multiply by karat/24 for 24K, 21K and 18K |
-| Rate limits | The project's wiki states no rate limits. We call it once a day |
-| Terms | Listed as CC0 (public domain) on a third-party index; VERIFY on the GitHub repository `fawazahmed0/exchange-api` |
-| History | Date-based URLs; earliest available date VERIFY (needed for task 3.13) |
+| Rate limits | VERIFIED 2026-11-26: the repository README says "No Rate limits". We call it once a day |
+| Terms | VERIFIED 2026-11-26: the GitHub repository `fawazahmed0/exchange-api` carries the CC0 1.0 licence (public domain) |
+| History | VERIFIED 2026-11-26 on the jsDelivr URL: the first date available is **2024-03-02** (2024-03-01 and earlier answer 404). Backfill range for task 3.13: 2024-03-02 to today |
 | Limitation | Gold is the international spot price converted to EGP. It is NOT the jeweller's price in Egypt |
 | Sample | `tests/samples/fx_gold_usd_latest.json` |
 | Fallback plan | If EGP/XAU is missing or the API disappears, switch to another API with the same output shape. Only `fx_gold.py` changes |
@@ -33,29 +33,36 @@ This file documents every data source of the Egypt Economic Intelligence Platfor
 | Terms | World Bank open data terms, commonly CC BY 4.0: VERIFY and cite the World Bank in the demo |
 | Sample | `tests/samples/world_bank_egy_inflation.json` |
 
-# 3. Official File (CSV / Excel) (R1)
+# 3. Official File: CBE Consumer Price Index (R1)
 
-**Status: NOT CHOSEN YET (task 1.16)**
+**Status: CHOSEN (task 1.16)**
 
-Candidates:
+| Item | Value |
+|---|---|
+| Publisher | Central Bank of Egypt (CBE), Economic Research, Time Series. The index itself is calculated by CAPMAS and republished by the CBE |
+| Page | `https://www.cbe.org.eg/en/economic-research/time-series/downloadlist?category=706A9057F8454F7284BE8143070D88C4` (Inflation, CPI, Monthly) |
+| Direct link | `https://www.cbe.org.eg/-/media/project/cbe/listing/time-series/inflation/cpi/cpi--monthly_.xls` ("All Years") |
+| Per-year files | `.../cpi/cpi-monthly-2025-2026.xlsx` (same layout, one fiscal year) |
+| Format | Excel. One sheet per fiscal year (July to June), 21 sheets from 2005/06 to 2025/26 |
+| Content | CPI and weights for the main groups, urban Egypt, base 2018/2019 = 100. We use the "All Items" row (Arabic: الرقم العام) |
+| Headers | Row with month labels in English ("July 2025", "Aug. 2025", "Sept. 2025"); row labels in Arabic and English; column C = relative weights |
+| Update frequency | Monthly (CBE page showed "Last Updated 09 Nov 2026" for the October 2026 figure). The xls we downloaded was last saved May 2026 and ended at April 2026, so the file can lag the page |
+| Size | About 350 KB (xls, all years) |
+| Terms | No licence text on the page. Public statistical data from a public institution. VERIFY the CBE "terms of use" before the demo and cite CBE / CAPMAS as the source |
+| Our indicator codes | `CPI_URBAN_INDEX` (index as published) and `CPI_URBAN_YOY` (year-over-year %, computed in staging) |
+| Parser | `parse_cbe_cpi_workbook()` in `src/connectors/official_file.py`. 230 monthly values from 2005-07 to 2026-04 |
+| Sample | `tests/samples/cbe_cpi_monthly_2025_2026.xlsx` (real file, fiscal year 2025/26) |
 
-| Candidate | Publisher | Notes |
-|---|---|---|
-| Headline urban CPI | CAPMAS (Central Agency for Public Mobilization and Statistics) | Headline inflation is published by CAPMAS, often as PDF; look for an Excel/CSV table |
-| Core inflation | Central Bank of Egypt (CBE) | Core inflation is calculated and published by the CBE |
+Known limits (be honest in the demo):
 
-To finish this section, document:
+- The file lags the CBE web page by a few months.
+- Months not published yet are empty cells. We skip them, we do not store NULL.
+- Gaps inside the source file: 2007-09 to 2008-06 and 2009-09 to 2010-06 (those two sheets only hold the first months in the "All Items" row layout we read).
+- The 2006/07 sheet labels August 2006 as "Aug.2007" (typo in the source). The parser takes the year from the fiscal year, not from each label.
+- The CBE firewall can answer 403 ("Request Rejected") to scripts. The connector sends a browser User-Agent and checks the download really is an Excel file. If it is still blocked, download the file by hand and set `OFFICIAL_FILE_PATH` (the connector then saves and registers that copy in `raw.files`).
+- Headline inflation (the annual %) is not in this file. It is the YOY we compute from the index.
 
-- Publisher
-- Direct download URL
-- Format
-- Update frequency
-- Column headers (Arabic or English)
-- Whether reuse is allowed
-
-Then set `OFFICIAL_FILE_URL` and `COLUMN_MAP` in `src/connectors/official_file.py`.
-
-If no stable file download exists, tell the team early and switch to another official file (the guide allows replacing a source).
+Other candidates we did not choose: CAPMAS monthly bulletin (PDF, harder to parse), CBE core inflation (published as PDF press releases).
 
 # 4. Static Shopping Site: Metro Markets (R2)
 
