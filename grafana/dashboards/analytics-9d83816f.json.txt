@@ -1,0 +1,400 @@
+{
+  "uid": "analytics",
+  "title": "Economic Analytics",
+  "tags": [
+    "analytics",
+    "basket-index",
+    "fx",
+    "gold"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "5m",
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Basket Index (latest)",
+      "type": "stat",
+      "datasource": {
+        "type": "postgres",
+        "uid": "eco-postgres"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "time_series",
+          "rawSql": "SELECT index_date::timestamp AS time, index_value FROM serving.v_basket_index ORDER BY index_date;",
+          "editorMode": "code",
+          "rawQuery": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 2
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 2,
+      "title": "USD / EGP (newest rate)",
+      "type": "stat",
+      "datasource": {
+        "type": "postgres",
+        "uid": "eco-postgres"
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "time_series",
+          "rawSql": "SELECT rate_date::timestamp AS time, AVG(rate) AS usd_egp\nFROM serving.v_fx_gold_daily WHERE code='USD' AND kind='currency'\nGROUP BY rate_date ORDER BY rate_date;",
+          "editorMode": "code",
+          "rawQuery": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 2,
+          "unit": "EGP"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 3,
+      "title": "Gold 21k, EGP/gram (newest rate)",
+      "type": "stat",
+      "datasource": {
+        "type": "postgres",
+        "uid": "eco-postgres"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "time_series",
+          "rawSql": "SELECT rate_date::timestamp AS time, AVG(rate) AS gold21_egp_per_gram\nFROM serving.v_fx_gold_daily WHERE code='XAU' AND kind='gold' AND karat=21\nGROUP BY rate_date ORDER BY rate_date;",
+          "editorMode": "code",
+          "rawQuery": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 2,
+          "unit": "EGP"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 4,
+      "title": "Index change, last day",
+      "type": "stat",
+      "datasource": {
+        "type": "postgres",
+        "uid": "eco-postgres"
+      },
+      "gridPos": {
+        "x": 18,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "time_series",
+          "rawSql": "SELECT index_date::timestamp AS time, index_pct_change FROM serving.v_fx_gold_vs_index WHERE index_pct_change IS NOT NULL ORDER BY index_date;",
+          "editorMode": "code",
+          "rawQuery": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 2,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 0.01
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 5,
+      "title": "Basket Index over time (base = 100)",
+      "type": "timeseries",
+      "datasource": {
+        "type": "postgres",
+        "uid": "eco-postgres"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "time_series",
+          "rawSql": "SELECT index_date::timestamp AS time, index_value AS \"Basket index\" FROM serving.v_basket_index WHERE $__timeFilter(index_date::timestamp) ORDER BY index_date;",
+          "editorMode": "code",
+          "rawQuery": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "title": "USD vs Gold 21k vs Basket (each rebased to 100)",
+      "type": "timeseries",
+      "datasource": {
+        "type": "postgres",
+        "uid": "eco-postgres"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 12,
+        "w": 24,
+        "h": 9
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "time_series",
+          "rawSql": "WITH fx AS (\n  SELECT rate_date AS d,\n    AVG(rate) FILTER (WHERE code='USD' AND kind='currency') AS usd,\n    AVG(rate) FILTER (WHERE code='XAU' AND kind='gold' AND karat=21) AS gold\n  FROM serving.v_fx_gold_daily WHERE $__timeFilter(rate_date::timestamp) GROUP BY rate_date),\nix AS (SELECT index_date AS d, index_value AS idx FROM serving.v_basket_index WHERE $__timeFilter(index_date::timestamp)),\ns AS (SELECT COALESCE(fx.d,ix.d) AS d, ix.idx, fx.usd, fx.gold FROM fx FULL JOIN ix ON ix.d=fx.d)\nSELECT d::timestamp AS time,\n 100*idx/NULLIF((SELECT idx FROM s WHERE idx IS NOT NULL ORDER BY d LIMIT 1),0) AS \"Basket index\",\n 100*usd/NULLIF((SELECT usd FROM s WHERE usd IS NOT NULL ORDER BY d LIMIT 1),0) AS \"USD/EGP\",\n 100*gold/NULLIF((SELECT gold FROM s WHERE gold IS NOT NULL ORDER BY d LIMIT 1),0) AS \"Gold 21k\"\nFROM s ORDER BY d;",
+          "editorMode": "code",
+          "rawQuery": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "description": "Each series rebased to 100 at its own first day in the selected range. USD and gold come straight from serving.v_fx_gold_daily, independent of the basket index dates (shown as gaps if the index ends earlier)."
+    },
+    {
+      "id": 7,
+      "title": "Correlation of daily changes",
+      "type": "table",
+      "datasource": {
+        "type": "postgres",
+        "uid": "eco-postgres"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 21,
+        "w": 12,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawSql": "SELECT n_days_usd, ROUND(corr_usd_vs_index::numeric,3) AS corr_usd_vs_index, n_days_gold, ROUND(corr_gold21_vs_index::numeric,3) AS corr_gold21_vs_index, note FROM serving.v_fx_gold_index_correlation;",
+          "editorMode": "code",
+          "rawQuery": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true
+      },
+      "description": "Correlation is not causation. Short window, indicative only."
+    },
+    {
+      "id": 8,
+      "title": "Top movers, biggest increases (last 7 days)",
+      "type": "table",
+      "datasource": {
+        "type": "postgres",
+        "uid": "eco-postgres"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 21,
+        "w": 12,
+        "h": 10
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawSql": "WITH h AS (\n  SELECT product_id, product_name, category, price_date, AVG(price) AS price\n  FROM serving.v_product_history GROUP BY 1,2,3,4),\ncur AS (SELECT DISTINCT ON (product_id) product_id, product_name, category, price AS price_now, price_date AS date_now FROM h ORDER BY product_id, price_date DESC),\nprev AS (SELECT DISTINCT ON (c.product_id) c.product_id, h.price AS price_before FROM cur c JOIN h ON h.product_id=c.product_id AND h.price_date <= c.date_now - 7 ORDER BY c.product_id, h.price_date DESC)\nSELECT cur.product_name AS product, cur.category, ROUND(prev.price_before::numeric,2) AS price_7d_ago, ROUND(cur.price_now::numeric,2) AS price_now, ROUND(((cur.price_now/NULLIF(prev.price_before,0)-1)*100)::numeric,2) AS change_pct\nFROM cur JOIN prev USING (product_id) ORDER BY change_pct DESC LIMIT 10;",
+          "editorMode": "code",
+          "rawQuery": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "change_pct"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true
+      }
+    },
+    {
+      "id": 9,
+      "title": "Top movers, biggest decreases (last 7 days)",
+      "type": "table",
+      "datasource": {
+        "type": "postgres",
+        "uid": "eco-postgres"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 26,
+        "w": 12,
+        "h": 10
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawSql": "WITH h AS (\n  SELECT product_id, product_name, category, price_date, AVG(price) AS price\n  FROM serving.v_product_history GROUP BY 1,2,3,4),\ncur AS (SELECT DISTINCT ON (product_id) product_id, product_name, category, price AS price_now, price_date AS date_now FROM h ORDER BY product_id, price_date DESC),\nprev AS (SELECT DISTINCT ON (c.product_id) c.product_id, h.price AS price_before FROM cur c JOIN h ON h.product_id=c.product_id AND h.price_date <= c.date_now - 7 ORDER BY c.product_id, h.price_date DESC)\nSELECT cur.product_name AS product, cur.category, ROUND(prev.price_before::numeric,2) AS price_7d_ago, ROUND(cur.price_now::numeric,2) AS price_now, ROUND(((cur.price_now/NULLIF(prev.price_before,0)-1)*100)::numeric,2) AS change_pct\nFROM cur JOIN prev USING (product_id) ORDER BY change_pct ASC LIMIT 10;",
+          "editorMode": "code",
+          "rawQuery": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true
+      }
+    }
+  ],
+  "editable": true
+}
